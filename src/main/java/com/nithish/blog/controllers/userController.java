@@ -29,14 +29,15 @@ public class userController {
 	private UserService userService;
 	
 	//POST - create user
-	@PostMapping("/")
-	public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto userDto) {
+	@PostMapping("create")
+	public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
 		UserDto creteUserDto = this.userService.createUser(userDto);
 		return new ResponseEntity<>(creteUserDto,HttpStatus.CREATED);
 	}
 	//PUT- update user
 	@PutMapping("/{userId}")
-	public ResponseEntity<UserDto> updateUser(@Valid @RequestBody UserDto userDto,@PathVariable("userId") Integer uid){
+	public ResponseEntity<UserDto> updateUser(@Valid
+												  @RequestBody UserDto userDto,@PathVariable("userId") Integer uid){
 		UserDto updatedUser = this.userService.updateUser(userDto, uid);
 		return ResponseEntity.ok(updatedUser);
 	}

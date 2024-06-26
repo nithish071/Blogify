@@ -24,7 +24,7 @@ public class SwaggerConfig {
     OpenAPI customOpenAPI(){
         String schemeName="bearerAuth";
         return new OpenAPI()
-                .info(new Info().title("Blogging Application").version("1.0"))
+                .info(new Info().title("Blogging Application").version("1.0").description("Made with love "+ Character.toString(0x1F49C) +" by nithish").contact(new Contact().url("https://www.linkedin.com/in/nithish-kumarp/")))
                 .addSecurityItem(new SecurityRequirement().addList(schemeName))
                 .components(
                         new Components().addSecuritySchemes(schemeName,new SecurityScheme()

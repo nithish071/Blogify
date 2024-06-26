@@ -17,6 +17,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
 
 @Entity
 @Table(name = "post")
@@ -34,10 +35,10 @@ public class Post {
 	
 	@Column(length = 10000)
 	private String content;
-	
-	
+
 	private String imageName;
-	
+
+
 	private Date addedDate;
 	
 	@ManyToOne
@@ -49,5 +50,4 @@ public class Post {
 	
 	@OneToMany(mappedBy = "post",cascade = CascadeType.ALL)
 	private Set<Comment> comments = new HashSet<>();
-	
 }

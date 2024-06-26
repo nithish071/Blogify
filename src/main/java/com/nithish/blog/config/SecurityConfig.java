@@ -18,18 +18,17 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
-import com.nithish.blog.security.CustomerUserDetailService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @Configuration
 @EnableMethodSecurity
 @EnableWebMvc
 @EnableWebSecurity
-public class SecurityConfig {
+public class SecurityConfig{
 
 	public static final String[] PUBLIC_URLS = {
 			"/api/v1/auth/**",
@@ -45,12 +44,14 @@ public class SecurityConfig {
 	@Autowired
 	private JwtAuthenticationFilter jwtAuthenticationFilter;
 	@Autowired
-	private CustomerUserDetailService customerUserDetailService;
+	private UserDetailsService userDetailService;
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+
 	        http.csrf(AbstractHttpConfigurer::disable)
 					.authorizeHttpRequests((authz) -> authz
-							.requestMatchers(PUBLIC_URLS).permitAll().requestMatchers(HttpMethod.GET).permitAll().anyRequest().authenticated()
+							.requestMatchers(PUBLIC_URLS).permitAll().requestMatchers(HttpMethod.POST,"/api/v1/auth/**").permitAll().requestMatchers(HttpMethod.POST,"/api/users/create").permitAll().requestMatchers(HttpMethod.GET).permitAll().anyRequest().authenticated()
 					)
 					.httpBasic(Customizer.withDefaults()).exceptionHandling(
 							exceptionConfigurer -> exceptionConfigurer
@@ -61,6 +62,7 @@ public class SecurityConfig {
 			http.addFilterBefore(this.jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
 			http.authenticationProvider(daoAuthenticationProvider());
+
 			return http.build();
 	    }
 
@@ -71,7 +73,7 @@ public class SecurityConfig {
 	@Bean
 	public DaoAuthenticationProvider daoAuthenticationProvider(){
 		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-		provider.setUserDetailsService(this.customerUserDetailService);
+		provider.setUserDetailsService(userDetailService);
 		provider.setPasswordEncoder(passwordEncoder());
 		return provider;
 	}

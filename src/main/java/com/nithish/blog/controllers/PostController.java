@@ -1,11 +1,17 @@
 package com.nithish.blog.controllers;
 
 
+import java.security.Principal;
 import java.util.List;
 
+import com.nithish.blog.exceptions.ApiException;
+import com.nithish.blog.payloads.UserDto;
+import com.nithish.blog.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,15 +34,23 @@ public class PostController {
 	
 	@Autowired
 	private PostService postService;
-	
+
+	@Autowired
+	private UserService userService;
 	// create
 	@PostMapping("/user/{userId}/category/{categoryId}/posts")
 	public ResponseEntity<PostDto> createPost(@RequestBody PostDto postDto,
 							@PathVariable Integer userId,
 							@PathVariable Integer categoryId){
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		UserDto user = userService.getUserById(userId);
+		if(!auth.getName().equals(user.getEmail())){
+            throw new ApiException("Use Your userId");
+        }
 		PostDto createPost = this.postService.createPost(postDto,userId,categoryId);
-		return new ResponseEntity<PostDto>(createPost,HttpStatus.CREATED);
-	}
+		return new ResponseEntity<PostDto>(createPost, HttpStatus.CREATED);
+    }
 	
 	// get by user
 	@GetMapping("/user/{userId}/posts")

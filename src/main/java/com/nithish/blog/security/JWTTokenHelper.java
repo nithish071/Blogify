@@ -38,7 +38,7 @@ public class JWTTokenHelper {
 
     //for retrieving any information from token we will need the secret key
     private Claims getAllClaimsFromToken(String token){
-        return Jwts.parser().setSigningKey(secret).build().parseSignedClaims(token).getPayload();
+        return Jwts.parser().setSigningKey(getSigninkey()).build().parseSignedClaims(token).getPayload();
     }
 
     //check if the token has expired

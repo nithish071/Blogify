@@ -29,11 +29,12 @@ public class UserServiceImpl implements UserService {
 	private PasswordEncoder passwordEncoder;
 	@Autowired
 	private RoleRepo roleRepo;
+
 	@Override
 	public UserDto registerNewUser(UserDto userDto) {
 
 		User user = this.modelMapper.map(userDto,User.class);
-
+//		System.out.println(user.getPassword());
 		// encoded the password
 		user.setPassword(this.passwordEncoder.encode(user.getPassword()));
 		// roles
@@ -47,12 +48,18 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserDto createUser(UserDto userDto) {
-		
-		User user = this.dtoToUser(userDto);
-		
-		User savedUser = this.userRepo.save(user);
-		
-		return this.userToDto(savedUser);
+
+		User user = this.modelMapper.map(userDto,User.class);
+//		System.out.println(user.getPassword());
+		// encoded the password
+		user.setPassword(this.passwordEncoder.encode(user.getPassword()));
+		// roles
+		Role role = this.roleRepo.findById(AppConstants.NORMAL_USER).get();
+		user.getRoles().add(role);
+
+		User newUser = this.userRepo.save(user);
+
+		return this.modelMapper.map(newUser,UserDto.class);
 	}
 
 	@Override

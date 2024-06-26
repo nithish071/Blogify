@@ -1,11 +1,16 @@
 package com.nithish.blog.controllers;
 
+import com.nithish.blog.entities.User;
 import com.nithish.blog.exceptions.ApiException;
+import com.nithish.blog.exceptions.ResourceNotFoundException;
 import com.nithish.blog.payloads.JwtAuthRequest;
 import com.nithish.blog.payloads.JwtAuthResponse;
 import com.nithish.blog.payloads.UserDto;
+import com.nithish.blog.repositories.UserRepo;
 import com.nithish.blog.security.JWTTokenHelper;
 import com.nithish.blog.services.UserService;
+import jakarta.validation.Valid;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +20,9 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/v1/auth/")
@@ -35,6 +39,8 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<JwtAuthResponse> createToken(
             @RequestBody JwtAuthRequest request) throws Exception {
+            String u = request.getUsername();
+            if(!u.contains("@")) throw new ApiException("please enter username as your email id.");
             this.authenticate(request.getUsername(),request.getPassword());
         UserDetails userDetails = this.userDetailsService.loadUserByUsername(request.getUsername());
         String token = this.jwtTokenHelper.generateToken(userDetails);
@@ -55,12 +61,30 @@ public class AuthController {
         }
 
     }
-    //register new user api
+//    //register new user api
 
     @PostMapping("/register")
-    public ResponseEntity<UserDto> registerUser(@RequestBody UserDto userDto){
+    public ResponseEntity<UserDto> registerUser(@Valid @RequestBody UserDto userDto){
         UserDto registerNewUser = this.userService.registerNewUser(userDto);
 
         return new ResponseEntity<>(registerNewUser,HttpStatus.CREATED);
     }
+
+    // get loggedin user data
+    @Autowired
+    private UserRepo userRepo;
+    @Autowired
+    private ModelMapper mapper;
+    @GetMapping("/current-user/")
+    public ResponseEntity<UserDto> getUser(Principal principal) {
+        try{
+            User user = this.userRepo.findByEmail(principal.getName()).get();
+            return new ResponseEntity<UserDto>(this.mapper.map(user, UserDto.class), HttpStatus.OK);
+        } catch (Exception e){
+            throw new ApiException("No user logged in. please login!!");
+        }
+
+
+    }
+
 }
